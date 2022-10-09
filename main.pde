@@ -10,6 +10,13 @@ boolean drawLoadArrayToGame = false;
 int gameState = 0; // 0 = In Game, 1 = Player X Wins, 2 = Player O Wins, 3 = Tie
 int clicked = 0; // กำหนดตัวแปรเพื่อนับจำนวนครั้งที่คลิก (Click counter)
 
+// Hint
+int[][] hintBoardX = {{0,0,0},{0,0,0},{0,0,0}}; // 0 = Null, 2 = Normal, 3 = Danger
+int[][] hintBoardO = {{0,0,0},{0,0,0},{0,0,0}}; // 0 = Null, 2 = Normal, 3 = Danger
+
+int[][] hint_default = {{0,0,0},{0,0,0},{0,0,0}};
+boolean isHint = false;
+
 DrawAnimation x1 = new DrawAnimation(150, 150);
 DrawAnimation x2 = new DrawAnimation(300, 150);
 DrawAnimation x3 = new DrawAnimation(450, 150);
@@ -47,13 +54,13 @@ class DrawAnimation{
         this.posX = posX;
         this.posY = posY;
     }
-
+ //<>//
     void drawX(){
-        if (frameX < 50){
-            frameX = frameX + 8;
+        if (frameX < 50){ //<>//
+            frameX = frameX + 8; //<>//
             frameY = frameY + 8;
 
-            strokeWeight(7);
+            strokeWeight(7); //<>//
             fill(0, 0, 255);
             line(posX - frameX, posY - frameY, posX + frameX, posY + frameY);
             line(posX - frameX, posY + frameY, posX + frameX, posY - frameY);
@@ -67,6 +74,7 @@ class DrawAnimation{
             drawLoadArrayToGame = false;
             frameX = 0;
             frameY = 0;
+            checkHint();
         }
     }
 
@@ -86,10 +94,10 @@ class DrawAnimation{
             isClicking = false;
             drawLoadArrayToGame = false;
             rad = 0;
+            checkHint();
         }
     }
 }
-
 
 // Controller
 void setup(){
@@ -100,6 +108,7 @@ void setup(){
     drawSaveButton();
     drawLoadButton();
     drawResetButton();
+    drawHintDisableButton();
     resetArray();
 }
 
@@ -109,6 +118,7 @@ void cleanUpScreen(){
     drawSaveButton();
     drawLoadButton();
     drawResetButton();
+    drawHintDisableButton();
 }
 
 void resetArray(){ //สร้างไว้ดึงตัวอักษรจาก Array ของ custom_board ไว้ใน board (Create a board using custom_board as a reference)
@@ -117,6 +127,8 @@ void resetArray(){ //สร้างไว้ดึงตัวอักษร�
     while (j < 3){ // วนลูปตามคอลัมน์ (Looping in columns)
         while (i < 3){ // วนลูปตามแถว (Looping in rows)
             board[i][j] = custom_board[i][j]; // นำตัวอักษรจาก custom_board ไปใส่ใน board
+            hintBoardO[i][j] = hint_default[i][j];
+            hintBoardX[i][j] = hint_default[i][j];
             i = i + 1;
         }
         i = 0;
@@ -227,6 +239,381 @@ void checkTie(){
         gameState = 3; // กำหนดเป็นเกมเสมอ (Set game state as tie)
     }
 }
+
+void checkHint(){
+    if (isHint == true){
+        // Check to block
+        // Vertical 4-7
+        if (board[0][1] == board[0][2] && board[0][0] != 'X' && board[0][0] != 'O'){
+            if (PlayerTurn == 'X'){
+                hintBoardO[0][0] = 3;
+            } else {
+                hintBoardX[0][0] = 3;
+            }
+        }
+        else{
+            // Diagonal 5-9
+            if (board[1][1] == board[2][2] && board[0][0] != 'X' && board[0][0] != 'O'){
+                if (PlayerTurn == 'X'){
+                    hintBoardO[0][0] = 3;
+                } else {
+                    hintBoardX[0][0] = 3;
+                }
+            }
+            else{
+                // Horizontal 2-3
+                if (board[1][0] == board[2][0] && board[0][0] != 'X' && board[0][0] != 'O'){
+                    if (PlayerTurn == 'X'){
+                        hintBoardO[0][0] = 3;
+                    } else {
+                        hintBoardX[0][0] = 3;
+                    }
+                }
+                else{
+                    hintBoardO[0][0] = 0;
+                    hintBoardX[0][0] = 0;
+                }
+            }
+        }
+
+        // Vertical 1-7
+        if (board[0][0] == board[0][2] && board[0][1] != 'X' && board[0][1] != 'O'){
+            if (PlayerTurn == 'X'){
+                hintBoardO[0][1] = 3;
+            } else {
+                hintBoardX[0][1] = 3;
+            }
+        }
+        else{
+            // Horizontal 5-6
+            if (board[1][1] == board[2][1] && board[0][1] != 'X' && board[0][1] != 'O'){
+                if (PlayerTurn == 'X'){
+                    hintBoardO[0][1] = 3;
+                } else {
+                    hintBoardX[0][1] = 3;
+                }
+            }
+            else{
+                hintBoardO[0][1] = 0;
+                hintBoardX[0][1] = 0;
+            }
+        }
+
+        // Vertical 1-4
+        if (board[0][0] == board[0][1] && board[0][2] != 'X' && board[0][2] != 'O'){
+            if (PlayerTurn == 'X'){
+                hintBoardO[0][2] = 3;
+            } else {
+                hintBoardX[0][2] = 3;
+            }
+        }
+        else{
+            // Diagonal 5-7
+            if (board[1][1] == board[2][0] && board[0][2] != 'X' && board[0][2] != 'O'){
+                if (PlayerTurn == 'X'){
+                    hintBoardO[0][2] = 3;
+                } else {
+                    hintBoardX[0][2] = 3;
+                }
+            }
+            else{
+                // Horizontal 8-9
+                if (board[1][2] == board[2][2] && board[0][2] != 'X' && board[0][2] != 'O'){
+                    if (PlayerTurn == 'X'){
+                        hintBoardO[0][2] = 3;
+                    } else {
+                        hintBoardX[0][2] = 3;
+                    }
+                }
+                else{
+                    hintBoardO[0][2] = 0;
+                    hintBoardX[0][2] = 0;
+                }
+            }
+        }
+
+        // Vertical 5-8
+        if (board[1][1] == board[1][2] && board[1][0] != 'X' && board[1][0] != 'O'){
+            if (PlayerTurn == 'X'){
+                hintBoardO[1][0] = 3;
+            } else {
+                hintBoardX[1][0] = 3;
+            }
+        }
+        else{
+            // Horizontal 1-3
+            if (board[0][0] == board[2][0] && board[1][0] != 'X' && board[1][0] != 'O'){
+                if (PlayerTurn == 'X'){
+                    hintBoardO[1][0] = 3;
+                } else {
+                    hintBoardX[1][0] = 3;
+                }
+            }
+            else{
+                hintBoardO[1][0] = 0;
+                hintBoardX[1][0] = 0;
+            }
+        }
+
+        // Vertical 2-8
+        if (board[1][0] == board[1][2] && board[1][1] != 'X' && board[1][1] != 'O'){
+            if (PlayerTurn == 'X'){
+                hintBoardO[1][1] = 3;
+            } else {
+                hintBoardX[1][1] = 3;
+            }
+        }
+        else{
+            // Diagonal 1-9
+            if (board[0][0] == board[2][2] && board[1][1] != 'X' && board[1][1] != 'O'){
+                if (PlayerTurn == 'X'){
+                    hintBoardO[1][1] = 3;
+                } else {
+                    hintBoardX[1][1] = 3;
+                }
+            }
+            else{
+                // Diagonal 3-7
+                if (board[0][2] == board[2][0] && board[1][1] != 'X' && board[1][1] != 'O'){
+                    if (PlayerTurn == 'X'){
+                        hintBoardO[1][1] = 3;
+                    } else {
+                        hintBoardX[1][1] = 3;
+                    }
+                }
+                else{
+                    // Horizontal 4-6
+                    if (board[0][1] == board[2][1] && board[1][1] != 'X' && board[1][1] != 'O'){
+                        if (PlayerTurn == 'X'){
+                            hintBoardO[1][1] = 3;
+                        } else {
+                            hintBoardX[1][1] = 3;
+                        }
+                    }
+                    else{
+                        hintBoardO[1][1] = 0;
+                        hintBoardX[1][1] = 0;
+                    }
+                }
+            }
+        }
+
+        // Vertical 2-5
+        if (board[1][0] == board[1][1] && board[1][2] != 'X' && board[1][2] != 'O'){
+            if (PlayerTurn == 'X'){
+                hintBoardO[1][2] = 3;
+            } else {
+                hintBoardX[1][2] = 3;
+            }
+        }
+        else{
+            // Horizontal 7-9
+            if (board[0][2] == board[2][2] && board[1][2] != 'X' && board[1][2] != 'O'){
+                if (PlayerTurn == 'X'){
+                    hintBoardO[1][2] = 3;
+                } else {
+                    hintBoardX[1][2] = 3;
+                }
+            }
+            else{
+                hintBoardO[1][2] = 0;
+                hintBoardX[1][2] = 0;
+            }
+        }
+
+        // Vertical 6-9
+        if (board[2][1] == board[2][2] && board[2][0] != 'X' && board[2][0] != 'O'){
+            if (PlayerTurn == 'X'){
+                hintBoardO[2][0] = 3;
+            } else {
+                hintBoardX[2][0] = 3;
+            }
+        }
+        else{
+            // Diagonal 3-5
+            if (board[0][2] == board[1][1] && board[2][0] != 'X' && board[2][0] != 'O'){
+                if (PlayerTurn == 'X'){
+                    hintBoardO[2][0] = 3;
+                } else {
+                    hintBoardX[2][0] = 3;
+                }
+            }
+            else{
+                // Horizontal 1-2
+                if (board[0][0] == board[1][0] && board[2][0] != 'X' && board[2][0] != 'O'){
+                    if (PlayerTurn == 'X'){
+                        hintBoardO[2][0] = 3;
+                    } else {
+                        hintBoardX[2][0] = 3;
+                    }
+                }
+                else{
+                    hintBoardO[2][0] = 0;
+                    hintBoardX[2][0] = 0;
+                }
+            }
+        }
+
+        // Vertical 3-9
+        if (board[2][0] == board[2][2] && board[2][1] != 'X' && board[2][1] != 'O'){
+            if (PlayerTurn == 'X'){
+                hintBoardO[2][1] = 3;
+            } else {
+                hintBoardX[2][1] = 3;
+            }
+        }
+        else{
+            // Horizontal 4-5
+            if (board[0][1] == board[1][1] && board[2][1] != 'X' && board[2][1] != 'O'){
+                if (PlayerTurn == 'X'){
+                    hintBoardO[2][1] = 3;
+                } else {
+                    hintBoardX[2][1] = 3;
+                }
+            }
+            else{
+                hintBoardO[2][1] = 0;
+                hintBoardX[2][1] = 0;
+            }
+        }
+
+        // Vertical 3-6
+        if (board[2][0] == board[2][1] && board[2][2] != 'X' && board[2][2] != 'O'){
+            if (PlayerTurn == 'X'){
+                hintBoardO[2][2] = 3;
+            } else {
+                hintBoardX[2][2] = 3;
+            }
+        }
+        else{
+            // Diagonal 1-5
+            if (board[0][0] == board[1][1] && board[2][2] != 'X' && board[2][2] != 'O'){
+                if (PlayerTurn == 'X'){
+                    hintBoardO[2][2] = 3;
+                } else {
+                    hintBoardX[2][2] = 3;
+                }
+            }
+            else{
+                // Horizontal 7-8
+                if (board[0][2] == board[1][2] && board[2][2] != 'X' && board[2][2] != 'O'){
+                    if (PlayerTurn == 'X'){
+                        hintBoardO[2][2] = 3;
+                    } else {
+                        hintBoardX[2][2] = 3;
+                    }
+                }
+                else{
+                    hintBoardO[2][2] = 0;
+                    hintBoardX[2][2] = 0;
+                }
+            }
+        }
+
+        displayHint();
+        printHintO();
+        printHintX();
+    }
+}
+
+void displayHint(){
+    // Hint to block
+    if (PlayerTurn == 'X'){
+        fill(254,97,101);
+        if (hintBoardO[0][0] == 3 && board[0][0] != 'X' && board[0][0] != 'O'){
+            rect(75,75,150,150);
+        }
+        if (hintBoardO[1][0] == 3 && board[1][0] != 'X' && board[1][0] != 'O'){
+            rect(225,75,150,150);
+        }
+        if (hintBoardO[2][0] == 3 && board[2][0] != 'X' && board[2][0] != 'O'){
+            rect(375,75,150,150);
+        }
+        if (hintBoardO[0][1] == 3 && board[0][1] != 'X' && board[0][1] != 'O'){
+            rect(75,225,150,150);
+        }
+        if (hintBoardO[1][1] == 3 && board[1][1] != 'X' && board[1][1] != 'O'){
+            rect(225,225,150,150);
+        }
+        if (hintBoardO[2][1] == 3 && board[2][1] != 'X' && board[2][1] != 'O'){
+            rect(375,225,150,150);
+        }
+        if (hintBoardO[0][2] == 3 && board[0][2] != 'X' && board[0][2] != 'O'){
+            rect(75,375,150,150);
+        }
+        if (hintBoardO[1][2] == 3 && board[1][2] != 'X' && board[1][2] != 'O'){
+            rect(225,375,150,150);
+        }
+        if (hintBoardO[2][2] == 3 && board[2][2] != 'X' && board[2][2] != 'O'){
+            rect(375,375,150,150);
+        }
+    }
+    else{
+        fill(254,97,101);
+        if (hintBoardX[0][0] == 3 && board[0][0] != 'X' && board[0][0] != 'O'){
+            rect(75,75,150,150);
+        }
+        if (hintBoardX[1][0] == 3 && board[1][0] != 'X' && board[1][0] != 'O'){
+            rect(225,75,150,150);
+        }
+        if (hintBoardX[2][0] == 3 && board[2][0] != 'X' && board[2][0] != 'O'){
+            rect(375,75,150,150);
+        }
+        if (hintBoardX[0][1] == 3 && board[0][1] != 'X' && board[0][1] != 'O'){
+            rect(75,225,150,150);
+        }
+        if (hintBoardX[1][1] == 3 && board[1][1] != 'X' && board[1][1] != 'O'){
+            rect(225,225,150,150);
+        }
+        if (hintBoardX[2][1] == 3 && board[2][1] != 'X' && board[2][1] != 'O'){
+            rect(375,225,150,150);
+        }
+        if (hintBoardX[0][2] == 3 && board[0][2] != 'X' && board[0][2] != 'O'){
+            rect(75,375,150,150);
+        }
+        if (hintBoardX[1][2] == 3 && board[1][2] != 'X' && board[1][2] != 'O'){
+            rect(225,375,150,150);
+        }
+        if (hintBoardX[2][2] == 3 && board[2][2] != 'X' && board[2][2] != 'O'){
+            rect(375,375,150,150);
+        }
+    }
+}
+
+void removeHint(){
+    fill(255);
+
+    if (hintBoardX[0][0] == 3 || hintBoardO[0][0] == 3 && board[0][0] != 'X' && board[0][0] != 'O'){
+        rect(75,75,150,150);
+    }
+    if (hintBoardX[1][0] == 3 || hintBoardO[1][0] == 3 && board[1][0] != 'X' && board[1][0] != 'O'){
+        rect(225,75,150,150);
+    }
+    if (hintBoardX[2][0] == 3 || hintBoardO[2][0] == 3 && board[2][0] != 'X' && board[2][0] != 'O'){
+        rect(375,75,150,150);
+    }
+    if (hintBoardX[0][1] == 3 || hintBoardO[0][1] == 3 && board[0][1] != 'X' && board[0][1] != 'O'){
+        rect(75,225,150,150);
+    }
+    if (hintBoardX[1][1] == 3 || hintBoardO[1][1] == 3 && board[1][1] != 'X' && board[1][1] != 'O'){
+        rect(225,225,150,150);
+    }
+    if (hintBoardX[2][1] == 3 || hintBoardO[2][1] == 3 && board[2][1] != 'X' && board[2][1] != 'O'){
+        rect(375,225,150,150);
+    }
+    if (hintBoardX[0][2] == 3 || hintBoardO[0][2] == 3 && board[0][2] != 'X' && board[0][2] != 'O'){
+        rect(75,375,150,150);
+    }
+    if (hintBoardX[1][2] == 3 || hintBoardO[1][2] == 3 && board[1][2] != 'X' && board[1][2] != 'O'){
+        rect(225,375,150,150);
+    }
+    if (hintBoardX[2][2] == 3 || hintBoardO[2][2] == 3 && board[2][2] != 'X' && board[2][2] != 'O'){
+        rect(375,375,150,150);
+    }
+    fill(0);
+}
+    
+
 // View
 void draw(){
     // Load Animation
@@ -299,11 +686,12 @@ void draw(){
         textFont(font);
         textSize(30);
         textAlign(CENTER);
-        text("Player " + PlayerTurn + "'s Turn", width/2, 45);
+        text("Player : " + PlayerTurn + "", width/2, 45);
 
         if (isClicking == true){
             // Check if mouse is in the play area
             if (mouseX > 75 && mouseX < 525 && mouseY > 75 && mouseY < 525){
+                removeHint();
                 // Check if mouse is in the grid
                 if (mouseX > 75 && mouseX < 225 && mouseY > 75 && mouseY < 225){
                     if (PlayerTurn == 'X'){
@@ -414,6 +802,7 @@ void draw(){
                 fill(207,207,0);
                 rect(200, 630, 200, 68);
 
+                isHint = false;
                 cleanUpScreen();
                 resetArray();
                 isClicking = false;
@@ -424,7 +813,23 @@ void draw(){
                 fill(82,219,121);
                 rect(398, 630, 200, 68);
 
+                isHint = false;
                 loadLastGame();
+                isClicking = false;
+            }
+            // Check if mouse in the hint button
+            if (mouseX > 250 && mouseX < 350 && mouseY > 543 && mouseY < 611){
+                println("Hint");
+
+                if (isHint == false){
+                    drawHintEnableButton();
+                    isHint = true;
+                }
+                else{
+                    drawHintDisableButton();
+                    isHint = false;
+                }
+
                 isClicking = false;
             }
         }
@@ -505,7 +910,7 @@ void drawGrid(){
 }
 
 void drawSaveButton(){
-    fill(255,71,62);
+    fill(72,170,255);
     stroke(0);
     strokeWeight(5);
     rect(2, 630, 200, 68);
@@ -518,7 +923,7 @@ void drawSaveButton(){
 }
 
 void drawLoadButton(){
-    fill(82,255,121);
+    fill(255,93,193);
     stroke(0);
     strokeWeight(5);
     rect(398, 630, 200, 68);
@@ -541,6 +946,32 @@ void drawResetButton(){
     textSize(30);
     textAlign(CENTER);
     text("Reset", 300, 675);
+}
+
+void drawHintDisableButton(){
+    fill(255,71,62);
+    stroke(0);
+    strokeWeight(5);
+    rect(250, 543, 100, 68, 10);
+    fill(0);
+    font = createFont("supermarket-48.vlw", 128);
+    textFont(font);
+    textSize(30);
+    textAlign(CENTER);
+    text("Hint", 300, 587);
+}
+
+void drawHintEnableButton(){
+    fill(82,255,121);
+    stroke(0);
+    strokeWeight(5);
+    rect(250, 543, 100, 68, 10);
+    fill(0);
+    font = createFont("supermarket-48.vlw", 128);
+    textFont(font);
+    textSize(30);
+    textAlign(CENTER);
+    text("Hint", 300, 587);
 }
 
 // Model
@@ -609,10 +1040,54 @@ void loadLastGame(){ // โหลดเกม มาเก็บใน Array boa
 void printBoard(){
     int i = 0;
     int j = 0;
-    println();
+    println("Board");
     while (j < 3){
         while (i < 3){
             print("[",i,"]","[",j,"]",board[i][j]);
+            
+            if (i < 2){
+                print("   |   ");
+            }
+            i = i + 1;
+        }
+        i = 0;
+        j = j + 1;
+
+    println();
+    }
+    j = 0;
+    println();
+}
+
+void printHintX(){
+    int i = 0;
+    int j = 0;
+    println("Hint X");
+    while (j < 3){
+        while (i < 3){
+            print("[",i,"]","[",j,"]",hintBoardX[i][j]);
+            
+            if (i < 2){
+                print("   |   ");
+            }
+            i = i + 1;
+        }
+        i = 0;
+        j = j + 1;
+
+    println();
+    }
+    j = 0;
+    println();
+}
+
+void printHintO(){
+    int i = 0;
+    int j = 0;
+    println("Hint O");
+    while (j < 3){
+        while (i < 3){
+            print("[",i,"]","[",j,"]",hintBoardO[i][j]);
             
             if (i < 2){
                 print("   |   ");
