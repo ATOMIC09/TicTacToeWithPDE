@@ -1,22 +1,23 @@
 PFont font;
 PrintWriter output;
 
-char PlayerTurn = 'X';
-char[][] custom_board = {{'a','b','c'},{'d','e','f'},{'g','h','i'}};
-char[][] board = {{' ',' ',' '},{' ',' ',' '},{' ',' ',' '}};
-boolean isEnd = false;
-boolean isClicking = false;
-boolean drawLoadArrayToGame = false;
+char PlayerTurn = 'X'; // สร้างตัวแปรเก็บรอบของผู้เล่น (Create a variable to store the round of the player)
+char[][] default_board = {{'a','b','c'},{'d','e','f'},{'g','h','i'}}; // สร้าง Array ของ board ดั้งเดิม (Create Array of default board)
+char[][] board = {{' ',' ',' '},{' ',' ',' '},{' ',' ',' '}}; // สร้าง Array ของ board (Create Array of board)
+boolean isEnd = false; // สร้างตัวแปรเก็บสถานะว่าเกมจบหรือยัง (Create a variable to store the status of whether the game is over or not)
+boolean isClicking = false; // สร้างตัวแปรเก็บว่ากำลังคลิกอยู่หรือไม่ (Create a variable to store whether you are clicking or not)ุ
+boolean drawLoadArrayToGame = false; // เก็บเงื่อนไนว่ากำลังโหลดเกมอยู่หรือไม่ เพื่อทำ Animation (Store the condition that the game is loading or not to do Animation)
 int gameState = 0; // 0 = In Game, 1 = Player X Wins, 2 = Player O Wins, 3 = Tie
 int clicked = 0; // กำหนดตัวแปรเพื่อนับจำนวนครั้งที่คลิก (Click counter)
 
 // Hint
-int[][] hintBoardX = {{0,0,0},{0,0,0},{0,0,0}}; // 0 = Null, 2 = Normal, 3 = Danger
-int[][] hintBoardO = {{0,0,0},{0,0,0},{0,0,0}}; // 0 = Null, 2 = Normal, 3 = Danger
+int[][] hint_default = {{0,0,0},{0,0,0},{0,0,0}}; // สร้าง Array ของ hint ดั้งเดิม (Create Array of default hint)
+int[][] hintBoardX = {{0,0,0},{0,0,0},{0,0,0}}; // 0 = Null, 3 = Danger
+int[][] hintBoardO = {{0,0,0},{0,0,0},{0,0,0}}; // 0 = Null, 3 = Danger
 
-int[][] hint_default = {{0,0,0},{0,0,0},{0,0,0}};
-boolean isHint = false;
+boolean isHint = false; // สร้างตัวแปรเก็บสถานะว่าเปิด Hint หรือปิด (Create a variable to store the status of whether the Hint is on or off)
 
+// สร้าง Obejct ที่จะวาดในแต่ละช่อง (Create Obejct that will be drawn in each box)
 DrawAnimation x1 = new DrawAnimation(150, 150);
 DrawAnimation x2 = new DrawAnimation(300, 150);
 DrawAnimation x3 = new DrawAnimation(450, 150);
@@ -41,31 +42,35 @@ DrawAnimation o7 = new DrawAnimation(150, 450);
 DrawAnimation o8 = new DrawAnimation(300, 450);
 DrawAnimation o9 = new DrawAnimation(450, 450);
 
+// View
+// สร้างคลาสวาดรูปแบบ Animation (Create a class to draw Animation)
 class DrawAnimation{
     int posX;
     int posY;
 
+    // Size for X
     int frameX = 0;
     int frameY = 0;
 
+    // Size for O
     int rad = 0;
     
     DrawAnimation(int posX, int posY){
         this.posX = posX;
         this.posY = posY;
     }
- //<>//
-    void drawX(){
-        if (frameX < 50){ //<>//
-            frameX = frameX + 8; //<>//
+
+    void drawX(){ // วาด X
+        if (frameX < 50){ 
+            frameX = frameX + 8; 
             frameY = frameY + 8;
 
-            strokeWeight(7); //<>//
+            strokeWeight(7); 
             fill(0, 0, 255);
             line(posX - frameX, posY - frameY, posX + frameX, posY + frameY);
             line(posX - frameX, posY + frameY, posX + frameX, posY - frameY);
-        } //<>//
-        if (frameX >= 50){
+        } 
+        if (frameX >= 50){ // เมื่อวาดเสร็จแล้ว (If the drawing is complete)
             printBoard();
             checkWin();
             checkTie();
@@ -78,7 +83,7 @@ class DrawAnimation{
         }
     }
 
-    void drawO(){
+    void drawO(){ // วาด O
         if (rad < 100){
             rad = rad + 16;
         }
@@ -86,7 +91,7 @@ class DrawAnimation{
         fill(255);
         circle(posX, posY, rad);
 
-        if (rad >= 100){
+        if (rad >= 100){ // เมื่อวาดเสร็จแล้ว (If the drawing is complete)
             printBoard();
             checkWin();
             checkTie();
@@ -99,36 +104,38 @@ class DrawAnimation{
     }
 }
 
+
 // Controller
 void setup(){
-    frameRate(144);
-    size(600, 700);
+    frameRate(144); // Set framerate to 144
+    size(600, 700); // Set size to 600x700
+    font = loadFont("supermarket-48.vlw"); // Load font
+    background(255); // Set background to white
+    drawGrid(); // Draw grid
+    drawSaveButton(); // Draw save button
+    drawLoadButton(); // Draw load button
+    drawResetButton(); // Draw reset button
+    drawHintDisableButton(); // Draw hint disable button
+    resetArray(); // Reset array to default
+}
+
+void cleanUpScreen(){ // ล้างหน้าจอ (Clean up screen)
     background(255);
     drawGrid();
     drawSaveButton();
     drawLoadButton();
     drawResetButton();
     drawHintDisableButton();
-    resetArray();
 }
 
-void cleanUpScreen(){
-    background(255);
-    drawGrid();
-    drawSaveButton();
-    drawLoadButton();
-    drawResetButton();
-    drawHintDisableButton();
-}
-
-void resetArray(){ //สร้างไว้ดึงตัวอักษรจาก Array ของ custom_board ไว้ใน board (Create a board using custom_board as a reference)
+void resetArray(){ //สร้างไว้ดึงตัวอักษรจาก Array ของ default_board ไว้ใน board (Create a board using default_board as a reference)
     int i = 0;
     int j = 0;
     while (j < 3){ // วนลูปตามคอลัมน์ (Looping in columns)
         while (i < 3){ // วนลูปตามแถว (Looping in rows)
-            board[i][j] = custom_board[i][j]; // นำตัวอักษรจาก custom_board ไปใส่ใน board
-            hintBoardO[i][j] = hint_default[i][j];
-            hintBoardX[i][j] = hint_default[i][j];
+            board[i][j] = default_board[i][j]; // นำตัวอักษรจาก default_board ไปใส่ใน board
+            hintBoardO[i][j] = hint_default[i][j]; // นำตัวอักษรจาก hint_default ไปใส่ใน hintBoardO
+            hintBoardX[i][j] = hint_default[i][j]; // นำตัวอักษรจาก hint_default ไปใส่ใน hintBoardX
             i = i + 1;
         }
         i = 0;
@@ -142,7 +149,7 @@ void mousePressed() {
     isClicking = true;
 }
 
-void playerFlip(){
+void playerFlip(){ // สลับผู้เล่น (Flip player)
     if (PlayerTurn == 'X'){
         PlayerTurn = 'O';
     } else {
@@ -231,17 +238,16 @@ void checkClicked(){ // เช็คว่าเล่นไปแล้วก�
     j = 0;
 }
 
-void checkTie(){
-    checkClicked();
-    println(clicked);
+void checkTie(){ // ตรวจสอบว่าเสมอหรือไม่ (Check if it is a tie)
+    checkClicked(); // เรียกใช้งานฟังก์ชัน checkClicked (Call checkClicked function)
 
     if (clicked == 9){ // ถ้าใช้แล้ว 9 ช่อง (ครบทุกช่อง) (If game end without any player winning)
         gameState = 3; // กำหนดเป็นเกมเสมอ (Set game state as tie)
     }
 }
 
-void checkHint(){
-    if (isHint == true){
+void checkHint(){ // ตรวจสอบว่าสามารถใบ้ได้หรือไม่ (Check if it can be hinted)
+    if (isHint == true){ // ถ้า isHint เป็น true (ถ้าเปิดใช้ Hint แล้ว) 
         // Check to block
         // Vertical 4-7
         if (board[0][1] == board[0][2] && board[0][0] != 'X' && board[0][0] != 'O'){
@@ -515,103 +521,6 @@ void checkHint(){
         printHintX();
     }
 }
-
-void displayHint(){
-    // Hint to block
-    if (PlayerTurn == 'X'){
-        fill(254,97,101);
-        if (hintBoardO[0][0] == 3 && board[0][0] != 'X' && board[0][0] != 'O'){
-            rect(75,75,150,150);
-        }
-        if (hintBoardO[1][0] == 3 && board[1][0] != 'X' && board[1][0] != 'O'){
-            rect(225,75,150,150);
-        }
-        if (hintBoardO[2][0] == 3 && board[2][0] != 'X' && board[2][0] != 'O'){
-            rect(375,75,150,150);
-        }
-        if (hintBoardO[0][1] == 3 && board[0][1] != 'X' && board[0][1] != 'O'){
-            rect(75,225,150,150);
-        }
-        if (hintBoardO[1][1] == 3 && board[1][1] != 'X' && board[1][1] != 'O'){
-            rect(225,225,150,150);
-        }
-        if (hintBoardO[2][1] == 3 && board[2][1] != 'X' && board[2][1] != 'O'){
-            rect(375,225,150,150);
-        }
-        if (hintBoardO[0][2] == 3 && board[0][2] != 'X' && board[0][2] != 'O'){
-            rect(75,375,150,150);
-        }
-        if (hintBoardO[1][2] == 3 && board[1][2] != 'X' && board[1][2] != 'O'){
-            rect(225,375,150,150);
-        }
-        if (hintBoardO[2][2] == 3 && board[2][2] != 'X' && board[2][2] != 'O'){
-            rect(375,375,150,150);
-        }
-    }
-    else{
-        fill(254,97,101);
-        if (hintBoardX[0][0] == 3 && board[0][0] != 'X' && board[0][0] != 'O'){
-            rect(75,75,150,150);
-        }
-        if (hintBoardX[1][0] == 3 && board[1][0] != 'X' && board[1][0] != 'O'){
-            rect(225,75,150,150);
-        }
-        if (hintBoardX[2][0] == 3 && board[2][0] != 'X' && board[2][0] != 'O'){
-            rect(375,75,150,150);
-        }
-        if (hintBoardX[0][1] == 3 && board[0][1] != 'X' && board[0][1] != 'O'){
-            rect(75,225,150,150);
-        }
-        if (hintBoardX[1][1] == 3 && board[1][1] != 'X' && board[1][1] != 'O'){
-            rect(225,225,150,150);
-        }
-        if (hintBoardX[2][1] == 3 && board[2][1] != 'X' && board[2][1] != 'O'){
-            rect(375,225,150,150);
-        }
-        if (hintBoardX[0][2] == 3 && board[0][2] != 'X' && board[0][2] != 'O'){
-            rect(75,375,150,150);
-        }
-        if (hintBoardX[1][2] == 3 && board[1][2] != 'X' && board[1][2] != 'O'){
-            rect(225,375,150,150);
-        }
-        if (hintBoardX[2][2] == 3 && board[2][2] != 'X' && board[2][2] != 'O'){
-            rect(375,375,150,150);
-        }
-    }
-}
-
-void removeHint(){
-    fill(255);
-
-    if (hintBoardX[0][0] == 3 || hintBoardO[0][0] == 3 && board[0][0] != 'X' && board[0][0] != 'O'){
-        rect(75,75,150,150);
-    }
-    if (hintBoardX[1][0] == 3 || hintBoardO[1][0] == 3 && board[1][0] != 'X' && board[1][0] != 'O'){
-        rect(225,75,150,150);
-    }
-    if (hintBoardX[2][0] == 3 || hintBoardO[2][0] == 3 && board[2][0] != 'X' && board[2][0] != 'O'){
-        rect(375,75,150,150);
-    }
-    if (hintBoardX[0][1] == 3 || hintBoardO[0][1] == 3 && board[0][1] != 'X' && board[0][1] != 'O'){
-        rect(75,225,150,150);
-    }
-    if (hintBoardX[1][1] == 3 || hintBoardO[1][1] == 3 && board[1][1] != 'X' && board[1][1] != 'O'){
-        rect(225,225,150,150);
-    }
-    if (hintBoardX[2][1] == 3 || hintBoardO[2][1] == 3 && board[2][1] != 'X' && board[2][1] != 'O'){
-        rect(375,225,150,150);
-    }
-    if (hintBoardX[0][2] == 3 || hintBoardO[0][2] == 3 && board[0][2] != 'X' && board[0][2] != 'O'){
-        rect(75,375,150,150);
-    }
-    if (hintBoardX[1][2] == 3 || hintBoardO[1][2] == 3 && board[1][2] != 'X' && board[1][2] != 'O'){
-        rect(225,375,150,150);
-    }
-    if (hintBoardX[2][2] == 3 || hintBoardO[2][2] == 3 && board[2][2] != 'X' && board[2][2] != 'O'){
-        rect(375,375,150,150);
-    }
-    fill(0);
-}
     
 
 // View
@@ -682,7 +591,6 @@ void draw(){
         stroke(0);
 
         fill(255);
-        font = createFont("supermarket-48.vlw", 128);
         textFont(font);
         textSize(30);
         textAlign(CENTER);
@@ -835,11 +743,10 @@ void draw(){
         }
     }
 
-    if (gameState == 1){
+    if (gameState == 1){ // Player X win
         background(230,71,62);
 
         fill(255);
-        font = createFont("supermarket-48.vlw", 128);
         textFont(font);
         textSize(50);
         textAlign(CENTER);
@@ -854,11 +761,10 @@ void draw(){
         }
     }
 
-    if (gameState == 2){
+    if (gameState == 2){ // Player O win
         background(82,210,121);
 
         fill(255);
-        font = createFont("supermarket-48.vlw", 128);
         textFont(font);
         textSize(50);
         textAlign(CENTER);
@@ -873,11 +779,10 @@ void draw(){
         }
     }
 
-    if (gameState == 3){
+    if (gameState == 3){ // Tie
         background(185,185,185);
 
         fill(255);
-        font = createFont("supermarket-48.vlw", 128);
         textFont(font);
         textSize(50);
         textAlign(CENTER);
@@ -893,7 +798,7 @@ void draw(){
     }
 }
 
-void drawGrid(){
+void drawGrid(){ // วาดตาราง (Draw grid)
     background(255);
     fill(0);
     strokeWeight(7);
@@ -909,70 +814,163 @@ void drawGrid(){
     line(75, 375, 525, 375);
 }
 
-void drawSaveButton(){
+void drawSaveButton(){ // วาดปุ่ม Save (Draw save button)
     fill(72,170,255);
     stroke(0);
     strokeWeight(5);
     rect(2, 630, 200, 68);
     fill(0);
-    font = createFont("supermarket-48.vlw", 128);
     textFont(font);
     textSize(30);
     textAlign(CENTER);
     text("Save", 100, 675);
 }
 
-void drawLoadButton(){
+void drawLoadButton(){ // วาดปุ่ม Load (Draw load button)
     fill(255,93,193);
     stroke(0);
     strokeWeight(5);
     rect(398, 630, 200, 68);
     fill(0);
-    font = createFont("supermarket-48.vlw", 128);
     textFont(font);
     textSize(30);
     textAlign(CENTER);
     text("Load", 500, 675);
 }   
 
-void drawResetButton(){
+void drawResetButton(){ // วาดปุ่ม Reset (Draw reset button)
     fill(255,255,0);
     stroke(0);
     strokeWeight(5);
     rect(200, 630, 200, 68);
     fill(0);
-    font = createFont("supermarket-48.vlw", 128);
     textFont(font);
     textSize(30);
     textAlign(CENTER);
     text("Reset", 300, 675);
 }
 
-void drawHintDisableButton(){
+void drawHintDisableButton(){ // วาดปุ่ม Hint แบบปิด (Draw hint disable button)
     fill(255,71,62);
     stroke(0);
     strokeWeight(5);
     rect(250, 543, 100, 68, 10);
     fill(0);
-    font = createFont("supermarket-48.vlw", 128);
     textFont(font);
     textSize(30);
     textAlign(CENTER);
     text("Hint", 300, 587);
 }
 
-void drawHintEnableButton(){
+void drawHintEnableButton(){ // วาดปุ่ม Hint แบบเปิด (Draw hint enable button)
     fill(82,255,121);
     stroke(0);
     strokeWeight(5);
     rect(250, 543, 100, 68, 10);
     fill(0);
-    font = createFont("supermarket-48.vlw", 128);
     textFont(font);
     textSize(30);
     textAlign(CENTER);
     text("Hint", 300, 587);
 }
+
+void displayHint(){ // แสดงผล Hint (Show Hint)
+    // Hint to block
+    if (PlayerTurn == 'X'){
+        fill(254,97,101);
+        if (hintBoardO[0][0] == 3 && board[0][0] != 'X' && board[0][0] != 'O'){
+            rect(75,75,150,150);
+        }
+        if (hintBoardO[1][0] == 3 && board[1][0] != 'X' && board[1][0] != 'O'){
+            rect(225,75,150,150);
+        }
+        if (hintBoardO[2][0] == 3 && board[2][0] != 'X' && board[2][0] != 'O'){
+            rect(375,75,150,150);
+        }
+        if (hintBoardO[0][1] == 3 && board[0][1] != 'X' && board[0][1] != 'O'){
+            rect(75,225,150,150);
+        }
+        if (hintBoardO[1][1] == 3 && board[1][1] != 'X' && board[1][1] != 'O'){
+            rect(225,225,150,150);
+        }
+        if (hintBoardO[2][1] == 3 && board[2][1] != 'X' && board[2][1] != 'O'){
+            rect(375,225,150,150);
+        }
+        if (hintBoardO[0][2] == 3 && board[0][2] != 'X' && board[0][2] != 'O'){
+            rect(75,375,150,150);
+        }
+        if (hintBoardO[1][2] == 3 && board[1][2] != 'X' && board[1][2] != 'O'){
+            rect(225,375,150,150);
+        }
+        if (hintBoardO[2][2] == 3 && board[2][2] != 'X' && board[2][2] != 'O'){
+            rect(375,375,150,150);
+        }
+    }
+    else{
+        fill(254,97,101);
+        if (hintBoardX[0][0] == 3 && board[0][0] != 'X' && board[0][0] != 'O'){
+            rect(75,75,150,150);
+        }
+        if (hintBoardX[1][0] == 3 && board[1][0] != 'X' && board[1][0] != 'O'){
+            rect(225,75,150,150);
+        }
+        if (hintBoardX[2][0] == 3 && board[2][0] != 'X' && board[2][0] != 'O'){
+            rect(375,75,150,150);
+        }
+        if (hintBoardX[0][1] == 3 && board[0][1] != 'X' && board[0][1] != 'O'){
+            rect(75,225,150,150);
+        }
+        if (hintBoardX[1][1] == 3 && board[1][1] != 'X' && board[1][1] != 'O'){
+            rect(225,225,150,150);
+        }
+        if (hintBoardX[2][1] == 3 && board[2][1] != 'X' && board[2][1] != 'O'){
+            rect(375,225,150,150);
+        }
+        if (hintBoardX[0][2] == 3 && board[0][2] != 'X' && board[0][2] != 'O'){
+            rect(75,375,150,150);
+        }
+        if (hintBoardX[1][2] == 3 && board[1][2] != 'X' && board[1][2] != 'O'){
+            rect(225,375,150,150);
+        }
+        if (hintBoardX[2][2] == 3 && board[2][2] != 'X' && board[2][2] != 'O'){
+            rect(375,375,150,150);
+        }
+    }
+}
+
+void removeHint(){ // ลบ Hint (Remove Hint)
+    fill(255);
+
+    if (hintBoardX[0][0] == 3 || hintBoardO[0][0] == 3 && board[0][0] != 'X' && board[0][0] != 'O'){
+        rect(75,75,150,150);
+    }
+    if (hintBoardX[1][0] == 3 || hintBoardO[1][0] == 3 && board[1][0] != 'X' && board[1][0] != 'O'){
+        rect(225,75,150,150);
+    }
+    if (hintBoardX[2][0] == 3 || hintBoardO[2][0] == 3 && board[2][0] != 'X' && board[2][0] != 'O'){
+        rect(375,75,150,150);
+    }
+    if (hintBoardX[0][1] == 3 || hintBoardO[0][1] == 3 && board[0][1] != 'X' && board[0][1] != 'O'){
+        rect(75,225,150,150);
+    }
+    if (hintBoardX[1][1] == 3 || hintBoardO[1][1] == 3 && board[1][1] != 'X' && board[1][1] != 'O'){
+        rect(225,225,150,150);
+    }
+    if (hintBoardX[2][1] == 3 || hintBoardO[2][1] == 3 && board[2][1] != 'X' && board[2][1] != 'O'){
+        rect(375,225,150,150);
+    }
+    if (hintBoardX[0][2] == 3 || hintBoardO[0][2] == 3 && board[0][2] != 'X' && board[0][2] != 'O'){
+        rect(75,375,150,150);
+    }
+    if (hintBoardX[1][2] == 3 || hintBoardO[1][2] == 3 && board[1][2] != 'X' && board[1][2] != 'O'){
+        rect(225,375,150,150);
+    }
+    if (hintBoardX[2][2] == 3 || hintBoardO[2][2] == 3 && board[2][2] != 'X' && board[2][2] != 'O'){
+        rect(375,375,150,150);
+    }
+    fill(0);
+}
+
 
 // Model
 void saveGame(){ // บันทึกเกม (Save game)
@@ -1035,6 +1033,7 @@ void loadLastGame(){ // โหลดเกม มาเก็บใน Array boa
         e.printStackTrace();
     }
 }
+
 
 // Debug
 void printBoard(){
