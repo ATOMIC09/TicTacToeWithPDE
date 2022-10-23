@@ -18,7 +18,7 @@ int[][] hintBoardO = {{0,0,0},{0,0,0},{0,0,0}}; // 0 = Null, 3 = Danger
 
 
 
-// สร้าง Obejct ที่จะวาดในแต่ละช่อง (Create Obejct that will be drawn in each box)
+// สร้าง Object ที่จะวาดในแต่ละช่อง (Create Objectข that will be drawn in each box)
 DrawAnimation x1 = new DrawAnimation(150, 150);
 DrawAnimation x2 = new DrawAnimation(300, 150);
 DrawAnimation x3 = new DrawAnimation(450, 150);
